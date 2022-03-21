@@ -40,7 +40,7 @@ export class WholePage extends LitElement {
 
 
 	@internalProperty() settings: Settings = {
-		density: 50
+		density: 160
 	};
 
 	@internalProperty() pixels: Pixel[] = [];
@@ -48,19 +48,52 @@ export class WholePage extends LitElement {
 	connectedCallback(): void {
 		super.connectedCallback();
 
-
 		for (let real = 0; real < this.settings.density+1; real++) {
 			for (let imag = 0; imag < this.settings.density+1; imag++) {
-				const rand = Math.random()
-				this.pixels.push({
-					x: real,
-					y: imag,
-					strength: rand
-				})
+				// const pixel = this.createPixel(real, this.settings.density/2);
+				const pixel = this.createPixel(real, imag);
+				this.pixels.push(pixel)
 			}
 		}
 
 		this.pixels = [...this.pixels]
+	}
+
+	createPixel(x: number, y: number): Pixel {
+		const real = (2*x/this.settings.density) - 1
+		const imag = (2*y/this.settings.density) - 1
+		
+		const strength = this.recursiveMandlebro(real, imag)
+		
+		return { x, y, strength };
+	}
+
+	recursiveMandlebro(real: number, imag: number): number {
+		let realAnswer = 0;
+		let imagAnswer = 0;
+		
+		let times = 0;
+		while (realAnswer < 2 && times < 100) {
+			times++;
+			[realAnswer, imagAnswer] = this.imaginaryMath(realAnswer, imagAnswer, real, imag);
+		}
+		return times/100
+	}
+
+	imaginaryMath(
+		real: number,
+		imag: number,
+		realBase: number,
+		imagBase: number
+		): [real: number, b:number] {
+		
+			const realAnswer = Math.pow(real,2) - Math.pow(imag,2) + realBase
+
+			const imaginaryAnswer = (2 * imag * real) + imagBase
+
+
+			
+			return [realAnswer, imaginaryAnswer]
 	}
 
 	settingsChanged(ev: CustomEvent<{settings: Settings}>) {
