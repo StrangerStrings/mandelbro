@@ -2,7 +2,7 @@ import { css, customElement, html, internalProperty, LitElement }
 	from "lit-element";
 import { styleMap } from 'lit-html/directives/style-map';
 import { defaultStyles } from './defaultStyles';
-import { Settings as Settings } from "./Settings";
+import { defaultSettings, Settings as Settings } from "./Settings";
 import './components/Graph';
 import './components/Controls';
 import { Pixel } from "./components/Graph";
@@ -39,18 +39,16 @@ export class WholePage extends LitElement {
 	];
 
 
-	@internalProperty() settings: Settings = {
-		density: 160
-	};
+	@internalProperty() settings: Settings = defaultSettings[0];
 
 	@internalProperty() pixels: Pixel[] = [];
+	
 
-	connectedCallback(): void {
-		super.connectedCallback();
+	createMmmSet() {
+		this.pixels = [];
 
-		for (let real = 0; real < this.settings.density+1; real++) {
-			for (let imag = 0; imag < this.settings.density+1; imag++) {
-				// const pixel = this.createPixel(real, this.settings.density/2);
+		for (let real = 0; real < this.settings.resolution+1; real++) {
+			for (let imag = 0; imag < this.settings.resolution+1; imag++) {
 				const pixel = this.createPixel(real, imag);
 				this.pixels.push(pixel)
 			}
@@ -60,8 +58,8 @@ export class WholePage extends LitElement {
 	}
 
 	createPixel(x: number, y: number): Pixel {
-		const real = (2*x/this.settings.density) - 1
-		const imag = (2*y/this.settings.density) - 1
+		const real = (this.settings.realDistance * x / this.settings.resolution) + this.settings.startReal
+		const imag = (this.settings.imagDistance * y /this.settings.resolution) + this.settings.startImag
 		
 		const strength = this.recursiveMandlebro(real, imag)
 		
@@ -91,13 +89,12 @@ export class WholePage extends LitElement {
 
 			const imaginaryAnswer = (2 * imag * real) + imagBase
 
-
-			
 			return [realAnswer, imaginaryAnswer]
 	}
 
 	settingsChanged(ev: CustomEvent<{settings: Settings}>) {
 		this.settings = {...ev.detail.settings};
+		this.createMmmSet()
 	}
 
 	render() {
@@ -105,13 +102,13 @@ export class WholePage extends LitElement {
 			<div class="container">
 				<m-graph
 					.pixels=${this.pixels}
-					.resolution=${this.settings.density}
+					.resolution=${this.settings.resolution}
 				>
 				</m-graph>
-				<!-- <control-panel
+				<control-panel
 					.settings=${this.settings}
 					@changed=${this.settingsChanged}
-				></control-panel> -->
+				></control-panel>
 			</div>
 		`;
 	}

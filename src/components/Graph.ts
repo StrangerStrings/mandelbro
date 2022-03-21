@@ -39,8 +39,8 @@ export class Fractal extends LitElement{
 			const style = {
 				left: `${100 * p.x/this.resolution}%`,
 				bottom: `${100 * p.y/this.resolution}%`,
-				height: `${100 / this.resolution}%`,
-				width: `${100 / this.resolution}%`,
+				height: `${110 / this.resolution}%`,
+				width: `${110 / this.resolution}%`,
 				opacity: `${p.strength}`
 			}
 

@@ -105,7 +105,7 @@ export class Controls extends LitElement{
   colorChangeDebounce: boolean = false;
   
   /** Whether all controls are hidden - full screen mode */
-  @internalProperty() hidden: boolean = true;
+  @internalProperty() hidden: boolean = false;
 
 
   /** Set initial settings and retreive custom from local */
@@ -113,7 +113,8 @@ export class Controls extends LitElement{
     super.connectedCallback();
     
     this.settings = defaultSettings[this.seletedDefault];
-    this.emitSettingsChangedEvent();
+    this.createSet()
+    // this.emitSettingsChangedEvent();
 
     const savedSettings = localStorage.getItem(localSavedSettingsKey);
     if (savedSettings) {
@@ -138,6 +139,13 @@ export class Controls extends LitElement{
   changeProperty(ev) {
     const id = ev.target.getAttribute('id');
     this.settings[id] = parseFloat(ev.target.value);
+    // this.emitSettingsChangedEvent(true);
+  }
+
+
+  createSet() {
+    this.settings.realDistance = this.settings.endReal - this.settings.startReal
+    this.settings.imagDistance = this.settings.endImag - this.settings.startImag
     this.emitSettingsChangedEvent(true);
   }
 
@@ -251,35 +259,30 @@ export class Controls extends LitElement{
   }
 
   /** Generate a set of inputs, one for each fractal setting */
-  // renderControls(): TemplateResult[] {
-  //   const controls: Control[] = [
-  //     {prop: 'amount'},
-  //     {prop: 'layers'},
-  //     {prop: 'angle', angleFunction: true},
-  //     {prop: 'sway'},
-  //     {prop: 'syncopation', title: 'syncopate'},
-  //     {prop: 'size'},
-  //     {prop: 'thinness'},
-  //     {prop: 'shrinking', title: 'shrink', step: 0.005},
-  //     {prop: 'forkPosition', title: 'fork pos', step: 0.05}
-  //   ];
+  renderControls(): TemplateResult[] {
+    const controls: Control[] = [
+      {prop: 'resolution'},
+      {prop: 'startReal', step: 0.05, title: 'lowest real number'},
+      {prop: 'endReal', step: 0.05, title: 'highest real number'},
+      {prop: 'startImag', step: 0.05, title: 'lowest imaginary num'},
+      {prop: 'endImag', step: 0.05, title: 'highest imaginary num'}
+    ];
 
-  //   return controls.map(c => {
-  //     const title = c.title ? c.title : c.prop;
-  //     const onChange = c.angleFunction ? this.changeAngle : this.changeProperty;
+    return controls.map(c => {
+      const title = c.title ? c.title : c.prop;
 
-  //     return html`
-  //       <div class="control">
-  //         ${title}
-  //         <input type="number" 
-  //           step=${ifDefined(c.step)}
-  //           id=${c.prop}
-  //           @change=${onChange}
-  //           .value=${this.settings[c.prop].toString()}>
-  //       </div>
-  //     `;
-  //   });
-  // }
+      return html`
+        <div class="control">
+          ${title}
+          <input type="number" 
+            step=${ifDefined(c.step)}
+            id=${c.prop}
+            @change=${this.changeProperty}
+            .value=${this.settings[c.prop].toString()}>
+        </div>
+      `;
+    });
+  }
 
   /** Render colour picker inputs for each fractal color and background */
   // renderColorControls(): TemplateResult {
@@ -352,6 +355,10 @@ export class Controls extends LitElement{
 		return html`
       <div class="container"
         ?hidden=${this.hidden}>
+
+        ${this.renderControls()}
+
+        <button @click=${this.createSet}>Go!</button>
 
         <div class="button-row">
           <span class="material-icons" 
