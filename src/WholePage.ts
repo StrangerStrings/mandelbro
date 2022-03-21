@@ -43,6 +43,9 @@ export class WholePage extends LitElement {
 
 	@internalProperty() pixels: Pixel[] = [];
 	
+	@internalProperty() mousePosition?: {x: number, y:number};
+
+	debounceHover: boolean = false;
 
 	createMmmSet() {
 		this.pixels = [];
@@ -71,11 +74,11 @@ export class WholePage extends LitElement {
 		let imagAnswer = 0;
 		
 		let times = 0;
-		while (realAnswer < 2 && times < 100) {
+		while (realAnswer < 2 && times < this.settings.discrepency) {
 			times++;
 			[realAnswer, imagAnswer] = this.imaginaryMath(realAnswer, imagAnswer, real, imag);
 		}
-		return times/100
+		return times/this.settings.discrepency
 	}
 
 	imaginaryMath(
@@ -97,12 +100,68 @@ export class WholePage extends LitElement {
 		this.createMmmSet()
 	}
 
+	hoverOnGraph(ev) {
+		if (this.debounceHover) {
+			return
+		}
+		this.debounceHover = true;
+		setTimeout(() => this.debounceHover = false, 100)
+
+		var bounds = ev.target.getBoundingClientRect();
+
+		var sizeX = bounds.bottom - bounds.top
+		var sizeY = bounds.right - bounds.left
+		
+		const posX = ev.clientX - bounds.left
+		const posY = ev.clientY - bounds.top
+
+		const ratioX = posX/sizeX
+		const ratioY = posY/sizeY
+		const ratioYRevered = ((ratioY - 0.5) * -1) + 0.5		
+
+		this.mousePosition = {
+			x: ratioX,
+			y: ratioYRevered
+		}
+	}
+
+	zoomIn() {
+		const settings = this.settings
+
+		const centerReal = this.mousePosition.x * settings.realDistance + settings.startReal
+		
+		const realDistance = settings.realDistance * 0.8
+		const startReal = centerReal - realDistance/2
+		const endReal = centerReal + realDistance/2
+
+		const centerImag = this.mousePosition.y * settings.imagDistance + settings.startImag
+
+		const imagDistance = settings.imagDistance * 0.8
+		const startImag = centerImag - imagDistance/2
+		const endImag = centerImag + imagDistance/2
+		
+
+		this.settings = {
+			...this.settings,
+			startReal,
+			endReal,
+			realDistance,
+			startImag,
+			endImag,
+			imagDistance
+		}
+
+		this.createMmmSet()
+	}
+
 	render() {
 		return html`
 			<div class="container">
 				<m-graph
 					.pixels=${this.pixels}
 					.resolution=${this.settings.resolution}
+					@mousemove=${this.hoverOnGraph}
+					@click=${this.zoomIn}
 				>
 				</m-graph>
 				<control-panel

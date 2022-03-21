@@ -262,6 +262,7 @@ export class Controls extends LitElement{
   renderControls(): TemplateResult[] {
     const controls: Control[] = [
       {prop: 'resolution'},
+      {prop: 'discrepency'},
       {prop: 'startReal', step: 0.05, title: 'lowest real number'},
       {prop: 'endReal', step: 0.05, title: 'highest real number'},
       {prop: 'startImag', step: 0.05, title: 'lowest imaginary num'},
