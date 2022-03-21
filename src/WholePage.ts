@@ -5,6 +5,7 @@ import { defaultStyles } from './defaultStyles';
 import { Settings as Settings } from "./Settings";
 import './components/Graph';
 import './components/Controls';
+import { Pixel } from "./components/Graph";
 
 @customElement('whole-page')
 /**
@@ -19,6 +20,14 @@ export class WholePage extends LitElement {
 			.container {
 				height: 100%;
 				background: black;
+				display: flex;
+				justify-content: center;
+				align-items: center;
+			}
+
+			m-graph {
+				height: 90vh;
+				width: 90vh;
 			}
 
 			control-panel {
@@ -31,13 +40,27 @@ export class WholePage extends LitElement {
 
 
 	@internalProperty() settings: Settings = {
-		amount: 1
+		density: 50
 	};
+
+	@internalProperty() pixels: Pixel[] = [];
 
 	connectedCallback(): void {
 		super.connectedCallback();
 
 
+		for (let real = 0; real < this.settings.density+1; real++) {
+			for (let imag = 0; imag < this.settings.density+1; imag++) {
+				const rand = Math.random()
+				this.pixels.push({
+					x: real,
+					y: imag,
+					strength: rand
+				})
+			}
+		}
+
+		this.pixels = [...this.pixels]
 	}
 
 	settingsChanged(ev: CustomEvent<{settings: Settings}>) {
@@ -48,13 +71,14 @@ export class WholePage extends LitElement {
 		return html`
 			<div class="container">
 				<m-graph
-
+					.pixels=${this.pixels}
+					.resolution=${this.settings.density}
 				>
 				</m-graph>
-				<control-panel
+				<!-- <control-panel
 					.settings=${this.settings}
 					@changed=${this.settingsChanged}
-				></control-panel>
+				></control-panel> -->
 			</div>
 		`;
 	}
