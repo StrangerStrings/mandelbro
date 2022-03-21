@@ -15,7 +15,7 @@ export type Settings = {
 
 export const defaultSettings: Settings[] = [
   {
-		resolution: 4,
+		resolution: 160,
     discrepency: 100,
 
 		startReal: -1,
