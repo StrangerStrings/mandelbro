@@ -18,13 +18,13 @@ export class Fractal extends LitElement{
 		css`
 			.graph {
 				position: relative;
-				background-color: grey;
 				height: 100%;
+				background-color: whitesmoke;
 			}
 			.pixel {
 				position: absolute;
 				border-radius: 50%;
-				transform: translate(-50%, 50%);
+				transform: translate(-50%, 50%) scale(1.52);
 				background-color: black;
 			}
 		`
@@ -36,11 +36,12 @@ export class Fractal extends LitElement{
 	
 	render() {
 		const pixels = this.pixels.map(p => {
+			const size = 100/this.resolution;
 			const style = {
-				left: `${100 * p.x/this.resolution}%`,
-				bottom: `${100 * p.y/this.resolution}%`,
-				height: `${110 / this.resolution}%`,
-				width: `${110 / this.resolution}%`,
+				left: `${p.x * size}%`,
+				bottom: `${p.y * size}%`,
+				height: `${size}%`,
+				width: `${size}%`,
 				opacity: `${p.strength}`
 			}
 

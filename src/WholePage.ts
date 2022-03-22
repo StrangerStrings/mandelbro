@@ -2,10 +2,10 @@ import { css, customElement, html, internalProperty, LitElement }
 	from "lit-element";
 import { styleMap } from 'lit-html/directives/style-map';
 import { defaultStyles } from './defaultStyles';
-import { defaultSettings, Settings as Settings } from "./Settings";
-import './components/Graph';
+import { Settings } from "./Settings";
+import './components/MandelbroGraph';
 import './components/Controls';
-import { Pixel } from "./components/Graph";
+import { Pixel } from "./components/MandelbroGraph";
 
 @customElement('whole-page')
 /**
@@ -26,8 +26,18 @@ export class WholePage extends LitElement {
 			}
 
 			m-graph {
+				position: relative;
 				height: 90vh;
 				width: 90vh;
+				cursor: zoom-in;
+			}
+
+			.view-finder {
+				position: absolute;
+				transform: translate(-50%,50%);
+				border: 2px dashed;
+				height:80%;
+				width: 80%;
 			}
 
 			control-panel {
@@ -39,13 +49,11 @@ export class WholePage extends LitElement {
 	];
 
 
-	@internalProperty() settings: Settings = defaultSettings[0];
+	@internalProperty() settings?: Settings;
 
 	@internalProperty() pixels: Pixel[] = [];
 	
-	@internalProperty() mousePosition?: {x: number, y:number};
-
-	debounceHover: boolean = false;
+	zoomFactor: number = 1.33
 
 	createMmmSet() {
 		this.pixels = [];
@@ -81,6 +89,7 @@ export class WholePage extends LitElement {
 		return times/this.settings.discrepency
 	}
 
+	/** Perform sum: n+1 = n^2 + c */
 	imaginaryMath(
 		real: number,
 		imag: number,
@@ -95,18 +104,13 @@ export class WholePage extends LitElement {
 			return [realAnswer, imaginaryAnswer]
 	}
 
+
 	settingsChanged(ev: CustomEvent<{settings: Settings}>) {
 		this.settings = {...ev.detail.settings};
 		this.createMmmSet()
 	}
 
-	hoverOnGraph(ev) {
-		if (this.debounceHover) {
-			return
-		}
-		this.debounceHover = true;
-		setTimeout(() => this.debounceHover = false, 100)
-
+	calculateMousePosition(ev) {
 		var bounds = ev.target.getBoundingClientRect();
 
 		var sizeX = bounds.bottom - bounds.top
@@ -117,29 +121,30 @@ export class WholePage extends LitElement {
 
 		const ratioX = posX/sizeX
 		const ratioY = posY/sizeY
-		const ratioYRevered = ((ratioY - 0.5) * -1) + 0.5		
+		const ratioYReversed = ((ratioY - 0.5) * -1) + 0.5		
 
-		this.mousePosition = {
+		return {
 			x: ratioX,
-			y: ratioYRevered
+			y: ratioYReversed
 		}
 	}
 
-	zoomIn() {
+	zoomIn(ev) {
+		const mouse = this.calculateMousePosition(ev)
+
 		const settings = this.settings
 
-		const centerReal = this.mousePosition.x * settings.realDistance + settings.startReal
+		const centerReal = mouse.x * settings.realDistance + settings.startReal
 		
-		const realDistance = settings.realDistance * 0.8
+		const realDistance = settings.realDistance / this.zoomFactor
 		const startReal = centerReal - realDistance/2
 		const endReal = centerReal + realDistance/2
 
-		const centerImag = this.mousePosition.y * settings.imagDistance + settings.startImag
+		const centerImag = mouse.y * settings.imagDistance + settings.startImag
 
-		const imagDistance = settings.imagDistance * 0.8
+		const imagDistance = settings.imagDistance / this.zoomFactor
 		const startImag = centerImag - imagDistance/2
 		const endImag = centerImag + imagDistance/2
-		
 
 		this.settings = {
 			...this.settings,
@@ -159,11 +164,9 @@ export class WholePage extends LitElement {
 			<div class="container">
 				<m-graph
 					.pixels=${this.pixels}
-					.resolution=${this.settings.resolution}
-					@mousemove=${this.hoverOnGraph}
+					.resolution=${this.settings?.resolution}
 					@click=${this.zoomIn}
-				>
-				</m-graph>
+				></m-graph>
 				<control-panel
 					.settings=${this.settings}
 					@changed=${this.settingsChanged}

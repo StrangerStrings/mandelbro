@@ -7,9 +7,9 @@ const localSavedSettingsKey = 'savedFractalSettings';
 
 type Control = {
   prop: string;
-  title?: string;
+  label?: string;
   step?: number;
-  angleFunction?: boolean;
+  tooltip?: string;
 }
 
 /**
@@ -29,11 +29,10 @@ export class Controls extends LitElement{
       .container, .color-container {
         display: flex;
         flex-direction: column;
-        gap: 3px;
-        padding: 5px;
-        border-radius: 8px;
-        border: 2px solid #858585;
-        background: #e1e1e1;
+        gap: 7px;
+        padding: 8px 4px 4px;
+        border: 3px solid black;
+        background: #e9e9e9;
       }
       .color-container {
         position: absolute;
@@ -90,63 +89,40 @@ export class Controls extends LitElement{
   
 	@property({type: Object}) settings: Settings;
   
-  /** index of selected? default settings */
-  @internalProperty() seletedDefault?: number = 0;
-  /** index of selected? custom settings */
-  @internalProperty() seletedCustom?: number;
-  /** True if neither default nor custom setting are picked */
-  @internalProperty() newSettings: boolean = false;
+  /** Whether all controls are hidden - full screen mode */
+  @internalProperty() hidden: boolean = false;
   
-  /** Array of saved custom settings */
-  @internalProperty() customSettings: Settings[] = [];
   /** Whether to show color controls */
   @internalProperty() showColorControl: boolean = false;
+
   /** slow down color picker @input event */
   colorChangeDebounce: boolean = false;
   
-  /** Whether all controls are hidden - full screen mode */
-  @internalProperty() hidden: boolean = false;
 
-
-  /** Set initial settings and retreive custom from local */
+  /** Set initial settings */
   connectedCallback(): void {
     super.connectedCallback();
     
-    this.settings = defaultSettings[this.seletedDefault];
-    this.createSet()
-    // this.emitSettingsChangedEvent();
-
-    const savedSettings = localStorage.getItem(localSavedSettingsKey);
-    if (savedSettings) {
-      this.customSettings = JSON.parse(savedSettings);
-    }
-  }
-
-  /** Emit event with current settings and optionally set varius 'new settings' properties */
-  emitSettingsChangedEvent(isNewSettings?: boolean): void {
+    this.settings = defaultSettings;
+    
     this.dispatchEvent(new CustomEvent('changed', {
       detail: {settings: this.settings}
     }));
-
-    if (isNewSettings) {
-      this.newSettings = true;
-      this.seletedCustom = undefined;
-      this.seletedDefault = undefined;
-    }
   }
+  
 
   /** Change a single property and emit event*/
   changeProperty(ev) {
     const id = ev.target.getAttribute('id');
     this.settings[id] = parseFloat(ev.target.value);
-    // this.emitSettingsChangedEvent(true);
+
+
+    this.dispatchEvent(new CustomEvent('changed', {
+      detail: {settings: this.settings}
+    }));
   }
 
-
   createSet() {
-    this.settings.realDistance = this.settings.endReal - this.settings.startReal
-    this.settings.imagDistance = this.settings.endImag - this.settings.startImag
-    this.emitSettingsChangedEvent(true);
   }
 
   // toggleColorControl() {
@@ -183,101 +159,35 @@ export class Controls extends LitElement{
   //   this.emitSettingsChangedEvent(true);
   // }
   
-  // addNewColor() {
-  //   this.settings.colors.push('#ffffff');
-  //   this.emitSettingsChangedEvent(true);
-  // }
-  // deleteColor(ev) {
-  //   if (this.settings.colors.length == 1) {
-  //     return;
-  //   }
-  //   const id = ev.target.getAttribute('id');
-  //   const idx = parseInt(id.replace("color-", ""));
-
-  //   this.settings.colors.splice(idx, 1);
-
-  //   this.emitSettingsChangedEvent(true);
-  // }
-
-  // /** Choose a new settings object from dropdown of 'defaults' and 'customs' */
-  // pickNewSettings(ev) {
-  //   const newSettingsValue = ev.target.value as string;
-    
-  //   if (newSettingsValue.includes("default-")) {
-  //     const idx = parseInt(newSettingsValue.replace("default-", ""));
-  //     this.settings = defaultSettings[idx];
-  //     this.emitSettingsChangedEvent();
-
-  //     this.newSettings = false;
-  //     this.seletedCustom = undefined;
-  //     this.seletedDefault = idx;
-  //   }
-    
-  //   if (newSettingsValue.includes("custom-")) {
-  //     const idx = parseInt(newSettingsValue.replace("custom-", ""));
-  //     this.settings = this.customSettings[idx];
-  //     this.emitSettingsChangedEvent();
-
-  //     this.newSettings = false;
-  //     this.seletedCustom = idx;
-  //     this.seletedDefault = undefined;
-  //   }
-  // }
-
-  // /** Save current 'new settings' as custom set in local storage */
-  // saveSettings() {
-  //   this.customSettings.push({...this.settings});
-  //   this.customSettings = [...this.customSettings];
-
-  //   this.newSettings = false;
-  //   this.seletedCustom = this.customSettings.length - 1;
-    
-  //   localStorage.setItem(
-  //     localSavedSettingsKey, 
-  //     JSON.stringify(this.customSettings)
-  //   );
-  // }
-  // /** Delete current custom settings */
-  // deleteSettings() {
-  //   if (this.seletedCustom == undefined) {
-  //     return;
-  //   }
-
-  //   this.customSettings.splice(this.seletedCustom, 1);
-  //   this.customSettings = [...this.customSettings];
-
-  //   localStorage.setItem(
-  //     localSavedSettingsKey, 
-  //     JSON.stringify(this.customSettings)
-  //   );
-
-  //   this.emitSettingsChangedEvent(true);
-  // }
   /** Full screen mode */
   toggleHide() {
     this.hidden = !this.hidden;
   }
 
+  reset() {
+    this.settings = defaultSettings
+    this.createSet()
+  }
+
   /** Generate a set of inputs, one for each fractal setting */
   renderControls(): TemplateResult[] {
     const controls: Control[] = [
-      {prop: 'resolution'},
-      {prop: 'discrepency'},
-      {prop: 'startReal', step: 0.05, title: 'lowest real number'},
-      {prop: 'endReal', step: 0.05, title: 'highest real number'},
-      {prop: 'startImag', step: 0.05, title: 'lowest imaginary num'},
-      {prop: 'endImag', step: 0.05, title: 'highest imaginary num'}
+      {prop: 'resolution', step: 20},
+      {prop: 'discrepency', step: 50}
     ];
 
     return controls.map(c => {
-      const title = c.title ? c.title : c.prop;
+      const title = c.label ? c.label : c.prop;
 
       return html`
         <div class="control">
-          ${title}
+          <span class="label">
+            ${title}
+          </span>
           <input type="number" 
             step=${ifDefined(c.step)}
             id=${c.prop}
+            title=${c.tooltip}
             @change=${this.changeProperty}
             .value=${this.settings[c.prop].toString()}>
         </div>
@@ -320,38 +230,6 @@ export class Controls extends LitElement{
   //   `;
   // }
 
-  /** Render dropdown options for default, custom and new sets of settings */
-  // renderSettingsOptions(): TemplateResult[] {
-  //   const defaultOptions = Array.from(
-  //     {length: defaultSettings.length},
-  //     (_, idx) => html`
-  //       <option
-  //         value="default-${idx}"
-  //         ?selected=${this.seletedDefault == idx}
-  //         >Default ${idx+1}
-  //       </option>
-  //     `);
-
-  //   const customOptions = Array.from(
-  //     {length: this.customSettings.length},
-  //     (_, idx) => html`
-  //       <option
-  //         value="custom-${idx}"
-  //         ?selected=${this.seletedCustom == idx}
-  //         >Custom ${idx+1}
-  //       </option>
-  //     `);
-
-  //   const newOption = this.newSettings ? 
-  //     html`<option value="new" selected>New Custom</option>` : undefined;
-
-  //   return [
-  //     ...defaultOptions,
-  //     ...customOptions,
-  //     newOption
-  //   ];
-  // }
-
 	render() {
 		return html`
       <div class="container"
@@ -359,12 +237,14 @@ export class Controls extends LitElement{
 
         ${this.renderControls()}
 
-        <button @click=${this.createSet}>Go!</button>
-
         <div class="button-row">
           <span class="material-icons" 
             @click=${this.toggleHide}>
             visibility_off
+          </span>
+          <span class="material-icons" 
+            @click=${this.reset}>
+            add
           </span>
         </div>
 
