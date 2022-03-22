@@ -1,21 +1,28 @@
 /** Settings that help calcuate and display the mandlebrot set */
 export type Settings = {
-  /** Number of initial fractals on the page  */
+  /** Points per side of the mandlebro viewfinder  */
   resolution: number;
-  discrepency: number;
+  /** How many recursive calculations to do on a point to see if it goes towards infinity */
+  calculations: number;
 
+  // range of the view finder when looking at the mandle graph
   startReal: number;
   endReal: number;
   startImag: number;
   endImag:  number;
 
+  // distance between the above range based properties
   realDistance?: number; 
-  imagDistance?: number
+  imagDistance?: number;
+
+  // colour tints to the graph
+  hue?: number;
+  color?: string;
 }
 
 export const defaultSettings: Settings = {
   resolution: 160,
-  discrepency: 100,
+  calculations: 100,
 
   startReal: -1.5,
   endReal: 0.5,
@@ -23,5 +30,8 @@ export const defaultSettings: Settings = {
   endImag: 1,
 
   realDistance: 2,
-  imagDistance: 2
+  imagDistance: 2,
+
+  hue: 215,
+  color: '#2e588e'
 };

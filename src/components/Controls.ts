@@ -2,6 +2,9 @@ import { css, customElement, html, internalProperty, LitElement, property, Templ
 import { defaultStyles, materialIcons } from "../defaultStyles";
 import { defaultSettings, Settings } from "../Settings";
 import { ifDefined } from 'lit-html/directives/if-defined';
+import { styleMap } from 'lit-html/directives/style-map';
+import { hexToHue } from '../colorUtil'
+import { tooltipHelp } from "../tooltipHelp";
 
 type Control = {
   prop: string;
@@ -48,7 +51,7 @@ export class Controls extends LitElement{
       }
       .material-icons {
         cursor: pointer;
-        color: #505050;
+        color: #181818;
       }
       .show-button {
         display: flex;
@@ -87,6 +90,17 @@ export class Controls extends LitElement{
     }));
   }
 
+  changeColor(ev) {
+    const color = ev.target.value
+    
+    this.settings.color = color
+    this.settings.hue = hexToHue(color);
+
+    this.dispatchEvent(new CustomEvent('color-changed', {
+      detail: {settings: this.settings}
+    }));
+  }
+
   /** Full screen mode */
   toggleHide() {
     this.hidden = !this.hidden;
@@ -104,8 +118,10 @@ export class Controls extends LitElement{
   renderControls(): TemplateResult[] {
     const controls: Control[] = [
       {prop: 'resolution', step: 20},
-      {prop: 'discrepency', step: 50}
+      {prop: 'calculations', step: 50}
     ];
+
+    const inputBackground = `hsl(${this.settings.hue}deg 40% 80%)`;
 
     return controls.map(c => {
       const title = c.label ? c.label : c.prop;
@@ -120,29 +136,32 @@ export class Controls extends LitElement{
             id=${c.prop}
             title=${c.tooltip}
             @change=${this.changeProperty}
+            style=${styleMap({background: inputBackground})}
             .value=${this.settings[c.prop].toString()}>
         </div>
       `;
     });
   }
 
-  /** Render colour picker inputs for each fractal color and background */
-  // renderColorControl(): TemplateResult {
-  //   return html`
-  //     <div class="control">
-  //       <input type="color"
-  //         @input=${this.changeBackgroundColor}
-  //         value=${this.settings.backgroundColor}>
-  //     </div>
-  //   `;
-  // }
-
 	render() {
+    const background = `hsl(${this.settings.hue}deg 13% 55%)`
+    const inputBackground = `hsl(${this.settings.hue}deg 40% 76%)`;
+
 		return html`
       <div class="container"
+        style=${styleMap({background})}
         ?hidden=${this.hidden}>
 
         ${this.renderControls()}
+
+        <div class="control">
+          hue 
+          <input type="color"
+            @change=${this.changeColor}
+            .value=${this.settings.color}
+            style=${styleMap({background: inputBackground})}
+            >
+        </div>
 
         <div class="button-row">
           <span class="material-icons" 
@@ -152,6 +171,10 @@ export class Controls extends LitElement{
           <span class="material-icons" 
             @click=${this.reset}>
             refresh
+          </span>
+          <span class="material-icons" 
+            title=${tooltipHelp}>
+            question_mark
           </span>
         </div>
       </div>
