@@ -4,6 +4,7 @@ import { styleMap } from 'lit-html/directives/style-map';
 import { defaultStyles } from './defaultStyles';
 import { Settings } from "./Settings";
 import './components/MandelbroGraph';
+import './components/ViewFinder';
 import './components/Controls';
 import { Pixel } from "./components/MandelbroGraph";
 
@@ -25,19 +26,22 @@ export class WholePage extends LitElement {
 				align-items: center;
 			}
 
-			m-graph {
+			.graph-window {
 				position: relative;
 				height: 90vh;
 				width: 90vh;
+			}
+
+			m-graph {
 				cursor: zoom-in;
 			}
 
-			.view-finder {
+			view-finder {
 				position: absolute;
-				transform: translate(-50%,50%);
-				border: 2px dashed;
-				height:80%;
-				width: 80%;
+				width:100%;
+				height:100%;
+				top:0;
+				left:0;
 			}
 
 			control-panel {
@@ -110,63 +114,19 @@ export class WholePage extends LitElement {
 		this.createMmmSet()
 	}
 
-	calculateMousePosition(ev) {
-		var bounds = ev.target.getBoundingClientRect();
-
-		var sizeX = bounds.bottom - bounds.top
-		var sizeY = bounds.right - bounds.left
-		
-		const posX = ev.clientX - bounds.left
-		const posY = ev.clientY - bounds.top
-
-		const ratioX = posX/sizeX
-		const ratioY = posY/sizeY
-		const ratioYReversed = ((ratioY - 0.5) * -1) + 0.5		
-
-		return {
-			x: ratioX,
-			y: ratioYReversed
-		}
-	}
-
-	zoomIn(ev) {
-		const mouse = this.calculateMousePosition(ev)
-
-		const settings = this.settings
-
-		const centerReal = mouse.x * settings.realDistance + settings.startReal
-		
-		const realDistance = settings.realDistance / this.zoomFactor
-		const startReal = centerReal - realDistance/2
-		const endReal = centerReal + realDistance/2
-
-		const centerImag = mouse.y * settings.imagDistance + settings.startImag
-
-		const imagDistance = settings.imagDistance / this.zoomFactor
-		const startImag = centerImag - imagDistance/2
-		const endImag = centerImag + imagDistance/2
-
-		this.settings = {
-			...this.settings,
-			startReal,
-			endReal,
-			realDistance,
-			startImag,
-			endImag,
-			imagDistance
-		}
-
-		this.createMmmSet()
-	}
-
 	render() {
 		return html`
 			<div class="container">
-				<m-graph
-					.pixels=${this.pixels}
-					.resolution=${this.settings?.resolution}
-					@click=${this.zoomIn}
-				></m-graph>
+				<div class="graph-window">
+					<m-graph
+						.pixels=${this.pixels}
+						.resolution=${this.settings?.resolution}
+					></m-graph>
+					<view-finder
+						.settings=${this.settings}
+						@changed=${this.settingsChanged}
+					></view-finder>
+				</div>
 				<control-panel
 					.settings=${this.settings}
 					@changed=${this.settingsChanged}
