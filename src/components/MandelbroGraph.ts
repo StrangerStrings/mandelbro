@@ -1,18 +1,13 @@
 import { css, customElement, html, LitElement, property } from "lit-element";
 import { styleMap } from 'lit-html/directives/style-map';
 import { defaultStyles } from "../defaultStyles";
-
-export type Pixel = {
-	x: number;
-	y: number;
-	strength: number;
-}
+import { Pixel } from "../WholePage";
 
 /**
- * A fractal (a line) that can contain copies of itself, that can contain copies of itself, that can con..
+ * component that renders some pixels
  */
 @customElement("m-graph")
-export class Fractal extends LitElement{
+export class MandelbroGraph extends LitElement{
 	static styles = [
 		defaultStyles,
 		css`
@@ -24,7 +19,7 @@ export class Fractal extends LitElement{
 			.pixel {
 				position: absolute;
 				border-radius: 50%;
-				transform: translate(-50%, 50%) scale(1.52);
+				transform: translate(-50%, 50%) scale(1.42);
 				background-color: black;
 			}
 		`

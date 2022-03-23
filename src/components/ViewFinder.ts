@@ -4,12 +4,6 @@ import {classMap} from 'lit-html/directives/class-map.js';
 import { defaultStyles, materialIcons } from "../defaultStyles";
 import { Settings } from "../Settings";
 
-export type Pixel = {
-	x: number;
-	y: number;
-	strength: number;
-}
-
 /**
  * A fractal (a line) that can contain copies of itself, that can contain copies of itself, that can con..
  */
@@ -23,13 +17,13 @@ export class ViewFinder extends LitElement{
 				position: relative;
 				height: 100%;
 			}
+
       .zoom {
         position: absolute;
         height: 100%;
         width: 100%;
         cursor: zoom-in;
       }
-
       .zoomOut {
         cursor: zoom-out
       }
@@ -79,15 +73,14 @@ export class ViewFinder extends LitElement{
   @internalProperty() zoomOut: boolean = false;
 	
   zoomFactor: number = 1.33;
-  
-  panFactor: number = 0.2;
+  panFactor: number = 0.3;
 
   /** Set initial settings */
   connectedCallback(): void {
     super.connectedCallback();
 
-    window.addEventListener('keydown', this.keydown.bind(this))
-    window.addEventListener('keyup', this.keyup.bind(this))
+    window.addEventListener('keydown', this.keydown.bind(this));
+    window.addEventListener('keyup', this.keyup.bind(this));
   }
 
   keydown(ev) {
@@ -104,42 +97,42 @@ export class ViewFinder extends LitElement{
 	calculateMousePosition(ev) {
 		var bounds = ev.target.getBoundingClientRect();
 
-		var sizeX = bounds.bottom - bounds.top
-		var sizeY = bounds.right - bounds.left
+		var sizeX = bounds.bottom - bounds.top;
+		var sizeY = bounds.right - bounds.left;
 		
-		const posX = ev.clientX - bounds.left
-		const posY = ev.clientY - bounds.top
+		const posX = ev.clientX - bounds.left;
+		const posY = ev.clientY - bounds.top;
 
-		const ratioX = posX/sizeX
-		const ratioY = posY/sizeY
-		const ratioYReversed = ((ratioY - 0.5) * -1) + 0.5		
+		const ratioX = posX/sizeX;
+		const ratioY = posY/sizeY;
+		const ratioYReversed = ((ratioY - 0.5) * -1) + 0.5;	
 
 		return {
 			x: ratioX,
 			y: ratioYReversed
-		}
+		};
 	}
 
 	zoomIn(ev) {
-		const mouse = this.calculateMousePosition(ev)
-		const settings = this.settings
+		const mouse = this.calculateMousePosition(ev);
+		const settings = this.settings;
 
-    let zoom = this.zoomFactor
+    let zoom = this.zoomFactor;
     if (this.zoomOut) {
       zoom = Math.pow(zoom, -1);
     }
 
-		const centerReal = mouse.x * settings.realDistance + settings.startReal
+		const centerReal = mouse.x * settings.realDistance + settings.startReal;
 		
-		const realDistance = settings.realDistance / zoom
-		const startReal = centerReal - realDistance/2
-		const endReal = centerReal + realDistance/2
+		const realDistance = settings.realDistance / zoom;
+		const startReal = centerReal - realDistance/2;
+		const endReal = centerReal + realDistance/2;
 
-		const centerImag = mouse.y * settings.imagDistance + settings.startImag
+		const centerImag = mouse.y * settings.imagDistance + settings.startImag;
 
-		const imagDistance = settings.imagDistance / zoom
-		const startImag = centerImag - imagDistance/2
-		const endImag = centerImag + imagDistance/2
+		const imagDistance = settings.imagDistance / zoom;
+		const startImag = centerImag - imagDistance/2;
+		const endImag = centerImag + imagDistance/2;
 
 		this.settings = {
 			...this.settings,
@@ -149,7 +142,7 @@ export class ViewFinder extends LitElement{
 			startImag,
 			endImag,
 			imagDistance
-		}
+		};
 
     this.dispatchEvent(new CustomEvent('changed', {
       detail: {settings: this.settings}
@@ -158,52 +151,48 @@ export class ViewFinder extends LitElement{
 
 
   arrowPress(ev) {
-    const direction = ev.target.getAttribute("direction")
+    const direction = ev.target.getAttribute("direction");
 
     if (direction == 'up') {
-      this.pan(undefined, this.panFactor)
+      this.pan(undefined, this.panFactor);
     }
     if (direction == 'down') {
-      this.pan(undefined, -this.panFactor)
+      this.pan(undefined, -this.panFactor);
     }
     if (direction == 'left') {
-      this.pan(-this.panFactor, undefined)
+      this.pan(-this.panFactor, undefined);
     }
     if (direction == 'right') {
-      this.pan(this.panFactor, undefined)
+      this.pan(this.panFactor, undefined);
     }
     
   }
 
   pan(xPan: number|undefined, yPan: number|undefined) {
-    const settings = this.settings
+    const settings = this.settings;
 		
-    console.log(1);
-    
     if (xPan) {
-      console.log(2);
-      const realPan = settings.realDistance * xPan
-      const startReal = settings.startReal + realPan
-      const endReal = settings.startReal + realPan
+      const realPan = settings.realDistance * xPan;
+      const startReal = settings.startReal + realPan;
+      const endReal = settings.startReal + realPan;
       
       this.settings = {
         ...this.settings,
         startReal,
         endReal
-      }
+      };
     }
     
     if (yPan) {
-      console.log(3);
-      const imagPan = settings.imagDistance * yPan
-      const startImag = settings.startImag + imagPan
-      const endImag = settings.startImag + imagPan
+      const imagPan = settings.imagDistance * yPan;
+      const startImag = settings.startImag + imagPan;
+      const endImag = settings.startImag + imagPan;
   
       this.settings = {
         ...this.settings,
         startImag,
         endImag
-      }
+      };
     }
 
     this.dispatchEvent(new CustomEvent('changed', {
@@ -212,18 +201,19 @@ export class ViewFinder extends LitElement{
   }
 
 
-
 	render() {
     const zoomClass = {
       zoom: true,
       zoomOut: this.zoomOut
-    }
+    };
 
 		return html`
       <div class="view-finder">
+
 			  <div class=${classMap(zoomClass)}
           @click=${this.zoomIn}
         ></div>
+
         <div class="arrow arrow-up"
           direction="up"
           @click=${this.arrowPress}
@@ -240,6 +230,7 @@ export class ViewFinder extends LitElement{
           direction="right"
           @click=${this.arrowPress}
         ></div>
+
 			</div>
 		`;
 	}

@@ -3,9 +3,15 @@ import { css, customElement, html, internalProperty, LitElement }
 import { defaultStyles } from './defaultStyles';
 import { Settings } from "./Settings";
 import './components/MandelbroGraph';
+import './components/MandelbroCanvas';
 import './components/ViewFinder';
 import './components/Controls';
-import { Pixel } from "./components/MandelbroGraph";
+
+export type Pixel = {
+	x: number;
+	y: number;
+	strength: number;
+}
 
 @customElement('whole-page')
 /**
@@ -108,10 +114,12 @@ export class WholePage extends LitElement {
 	settingsChanged(ev: CustomEvent<{settings: Settings}>) {
 		this.settings = {...ev.detail.settings};
 		this.createMandelSet();
+		console.log(this.settings);
 	}
 
 	colorChanged(ev: CustomEvent<{settings: Settings}>) {
 		this.settings = {...ev.detail.settings};
+		
 	}
 
 
@@ -119,11 +127,16 @@ export class WholePage extends LitElement {
 		return html`
 			<div class="container">
 				<div class="graph-window">
-					<m-graph
+					<m-canvas
 						.pixels=${this.pixels}
 						.resolution=${this.settings?.resolution}
 						.hue=${this.settings?.hue}
-					></m-graph>
+					></m-canvas>
+					<!-- <m-graph
+						.pixels=${this.pixels}
+						.resolution=${this.settings?.resolution}
+						.hue=${this.settings?.hue}
+					></m-graph> -->
 					<view-finder
 						.settings=${this.settings}
 						@changed=${this.settingsChanged}
