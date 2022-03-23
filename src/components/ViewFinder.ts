@@ -5,7 +5,7 @@ import { defaultStyles, materialIcons } from "../defaultStyles";
 import { Settings } from "../Settings";
 
 /**
- * A fractal (a line) that can contain copies of itself, that can contain copies of itself, that can con..
+ * Layer over the mandlebro to zoom in and out and pan all four directions
  */
 @customElement("view-finder")
 export class ViewFinder extends LitElement{
@@ -72,10 +72,9 @@ export class ViewFinder extends LitElement{
 	
   @internalProperty() zoomOut: boolean = false;
 	
-  zoomFactor: number = 1.33;
-  panFactor: number = 0.3;
+  zoomFactor: number = 1.5;
+  panFactor: number = 0.33;
 
-  /** Set initial settings */
   connectedCallback(): void {
     super.connectedCallback();
 
@@ -94,14 +93,15 @@ export class ViewFinder extends LitElement{
     }
   }
   
+  /** returns mouse x & y as ratio of the view */
 	calculateMousePosition(ev) {
 		var bounds = ev.target.getBoundingClientRect();
 
-		var sizeX = bounds.bottom - bounds.top;
-		var sizeY = bounds.right - bounds.left;
+		var sizeX = bounds.right - bounds.left;
+		var sizeY = bounds.bottom - bounds.top;
 		
 		const posX = ev.clientX - bounds.left;
-		const posY = ev.clientY - bounds.top;
+    const posY = ev.clientY - bounds.top;
 
 		const ratioX = posX/sizeX;
 		const ratioY = posY/sizeY;
@@ -115,6 +115,8 @@ export class ViewFinder extends LitElement{
 
 	zoomIn(ev) {
 		const mouse = this.calculateMousePosition(ev);
+    console.log(mouse.y);
+    
 		const settings = this.settings;
 
     let zoom = this.zoomFactor;
@@ -122,15 +124,15 @@ export class ViewFinder extends LitElement{
       zoom = Math.pow(zoom, -1);
     }
 
-		const centerReal = mouse.x * settings.realDistance + settings.startReal;
+		const centerReal = mouse.x * settings.rangeReal + settings.startReal;
 		
-		const realDistance = settings.realDistance / zoom;
+		const realDistance = settings.rangeReal / zoom;
 		const startReal = centerReal - realDistance/2;
 		const endReal = centerReal + realDistance/2;
 
-		const centerImag = mouse.y * settings.imagDistance + settings.startImag;
+		const centerImag = mouse.y * settings.rangeImag + settings.startImag;
 
-		const imagDistance = settings.imagDistance / zoom;
+		const imagDistance = settings.rangeImag / zoom;
 		const startImag = centerImag - imagDistance/2;
 		const endImag = centerImag + imagDistance/2;
 
@@ -138,10 +140,10 @@ export class ViewFinder extends LitElement{
 			...this.settings,
 			startReal,
 			endReal,
-			realDistance,
+			rangeReal: realDistance,
 			startImag,
 			endImag,
-			imagDistance
+			rangeImag: imagDistance
 		};
 
     this.dispatchEvent(new CustomEvent('changed', {
@@ -172,7 +174,7 @@ export class ViewFinder extends LitElement{
     const settings = this.settings;
 		
     if (xPan) {
-      const realPan = settings.realDistance * xPan;
+      const realPan = settings.rangeReal * xPan;
       const startReal = settings.startReal + realPan;
       const endReal = settings.startReal + realPan;
       
@@ -184,7 +186,7 @@ export class ViewFinder extends LitElement{
     }
     
     if (yPan) {
-      const imagPan = settings.imagDistance * yPan;
+      const imagPan = settings.rangeImag * yPan;
       const startImag = settings.startImag + imagPan;
       const endImag = settings.startImag + imagPan;
   

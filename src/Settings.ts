@@ -12,8 +12,8 @@ export type Settings = {
   endImag:  number;
 
   // distance between the above range based properties
-  realDistance?: number; 
-  imagDistance?: number;
+  rangeReal?: number; 
+  rangeImag?: number;
 
   // colour tints to the graph
   hue?: number;
@@ -21,7 +21,7 @@ export type Settings = {
 }
 
 export const defaultSettings: Settings = {
-  resolution: 160,
+  resolution: 240,
   calculations: 100,
 
   startReal: -1.5,
@@ -29,8 +29,8 @@ export const defaultSettings: Settings = {
   startImag: -1,
   endImag: 1,
 
-  realDistance: 2,
-  imagDistance: 2,
+  rangeReal: 2,
+  rangeImag: 2,
 
   hue: 215,
   color: '#2e588e'

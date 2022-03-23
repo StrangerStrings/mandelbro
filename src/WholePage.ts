@@ -36,11 +36,6 @@ export class WholePage extends LitElement {
 				height: 90vh;
 				width: 90vh;
 			}
-
-			m-graph {
-				cursor: zoom-in;
-			}
-
 			view-finder {
 				position: absolute;
 				width:100%;
@@ -76,19 +71,21 @@ export class WholePage extends LitElement {
 	}
 
 	createPixel(x: number, y: number): Pixel {
-		const real = (this.settings.realDistance * x / this.settings.resolution) + this.settings.startReal;
-		const imag = (this.settings.imagDistance * y /this.settings.resolution) + this.settings.startImag;
+		const real = (this.settings.rangeReal * x / this.settings.resolution) + this.settings.startReal;
+		const imag = (this.settings.rangeImag * y /this.settings.resolution) + this.settings.startImag;
 		
 		const strength = this.recursiveMandlebro(real, imag);
 		
 		return { x, y, strength };
 	}
 
+	/** Recursive imaginary math to check if that number tends towards infinity or not */
 	recursiveMandlebro(real: number, imag: number): number {
 		let realAnswer = 0;
 		let imagAnswer = 0;
 		
 		let times = 0;
+		// if real part of the number becomes greater than 2 it will tend towards infinity
 		while (realAnswer < 2 && times < this.settings.calculations) {
 			times++;
 			[realAnswer, imagAnswer] = this.imaginaryMath(realAnswer, imagAnswer, real, imag);
@@ -102,9 +99,11 @@ export class WholePage extends LitElement {
 		imag: number,
 		realBase: number,
 		imagBase: number
-		): [real: number, b:number] {
+		): [real: number, imag: number] {
+			// real part of the sum (as real*real=real & imaginary*imaginary=real)
 			const realAnswer = Math.pow(real,2) - Math.pow(imag,2) + realBase
 
+			// imaginary part of the sum (as imaginary*real=imaginary)
 			const imaginaryAnswer = (2 * imag * real) + imagBase
 
 			return [realAnswer, imaginaryAnswer]
@@ -114,12 +113,10 @@ export class WholePage extends LitElement {
 	settingsChanged(ev: CustomEvent<{settings: Settings}>) {
 		this.settings = {...ev.detail.settings};
 		this.createMandelSet();
-		console.log(this.settings);
 	}
 
 	colorChanged(ev: CustomEvent<{settings: Settings}>) {
 		this.settings = {...ev.detail.settings};
-		
 	}
 
 
