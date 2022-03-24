@@ -15,13 +15,17 @@ export type Settings = {
   rangeReal?: number; 
   rangeImag?: number;
 
+  //warp the standard seen-it-before picture
+  warp1: number;
+  warp2: number;
+
   // colour tints to the graph
   hue?: number;
   color?: string;
 }
 
 export const defaultSettings: Settings = {
-  resolution: 240,
+  resolution: 400,
   calculations: 100,
 
   startReal: -1.5,
@@ -31,6 +35,9 @@ export const defaultSettings: Settings = {
 
   rangeReal: 2,
   rangeImag: 2,
+
+  warp1: 1,
+  warp2: 0,
 
   hue: 215,
   color: '#2e588e'

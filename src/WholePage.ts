@@ -101,10 +101,10 @@ export class WholePage extends LitElement {
 		imagBase: number
 		): [real: number, imag: number] {
 			// real part of the sum (as real*real=real & imaginary*imaginary=real)
-			const realAnswer = Math.pow(real,2) - Math.pow(imag,2) + realBase
+			const realAnswer = Math.pow(real*this.settings.warp1,2) - Math.pow(imag,2) + (realBase)
 
 			// imaginary part of the sum (as imaginary*real=imaginary)
-			const imaginaryAnswer = (2 * imag * real) + imagBase
+			const imaginaryAnswer = (2 * (imag + this.settings.warp2) * (real)) + imagBase
 
 			return [realAnswer, imaginaryAnswer]
 	}

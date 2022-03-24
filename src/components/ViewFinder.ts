@@ -115,14 +115,13 @@ export class ViewFinder extends LitElement{
 
 	zoomIn(ev) {
 		const mouse = this.calculateMousePosition(ev);
-    console.log(mouse.y);
     
-		const settings = this.settings;
-
     let zoom = this.zoomFactor;
     if (this.zoomOut) {
       zoom = Math.pow(zoom, -1);
     }
+    
+		const settings = this.settings;
 
 		const centerReal = mouse.x * settings.rangeReal + settings.startReal;
 		

@@ -117,7 +117,7 @@ export class Controls extends LitElement{
   /** Generate a set of inputs, one for each fractal setting */
   renderControls(): TemplateResult[] {
     const controls: Control[] = [
-      {prop: 'resolution', step: 20},
+      {prop: 'resolution', step: 50},
       {prop: 'calculations', step: 50}
     ];
 
@@ -161,6 +161,22 @@ export class Controls extends LitElement{
             .value=${this.settings.color}
             style=${styleMap({background: inputBackground})}
             >
+        </div>
+
+        <div class="control">
+          warp
+          <input type="number"
+            step=0.05
+            id='warp1'
+            @change=${this.changeProperty}
+            style=${styleMap({background: inputBackground})}
+            .value=${this.settings.warp1.toString()}>
+          <input type="number"
+            step=0.02
+            id='warp2'
+            @change=${this.changeProperty}
+            style=${styleMap({background: inputBackground})}
+            .value=${this.settings.warp2.toString()}>
         </div>
 
         <div class="button-row">
